@@ -6,7 +6,7 @@ import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import styles from './index.module.css';
 import HomepageFeatures from '../components/HomepageFeatures';
 import useThemeContext from '@theme/hooks/useThemeContext';
-import Logo from '@site/static/img/Logo.png';
+import Logo from '@site/static/img/logo.png';
 import LogoDark from '@site/static/img/logo-inverted.png';
 
 function HomepageHeader() {
