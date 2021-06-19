@@ -4,8 +4,8 @@ id: installation
 
 # Installation
 
-import Tabs from '@theme/Tabs';
-import TabItem from '@site/src/components/TabItemWithBorder';
+import Tabs from '@site/src/components/Tabs';
+import TabItem from '@site/src/components/TabItem';
 import MicrosoftButton from '@site/src/components/MicrosoftButton';
 
 ## Installing BepInEx {#bepinex}
@@ -38,12 +38,7 @@ Here's a few pointers:
 - If you have Windows 7 or 8, then [go here](https://support.microsoft.com/en-us/windows/which-version-of-windows-operating-system-am-i-running-628bec99-476a-2c13-5296-9dd081cdd808).
 
 </TabItem>
-<TabItem value="linux">
-
-- Simply download **`BepInEx_unix_5.x.y.z.zip`.**
-
-</TabItem>
-<TabItem value="macos">
+<TabItem values={["linux", "macos"]}>
 
 - Simply download **`BepInEx_unix_5.x.y.z.zip`.**
 
@@ -92,12 +87,7 @@ Try looking at these paths:
 - `C:\Program Files\GOGcom`; <!-- yep, without the dot -->
 
 </TabItem>
-<TabItem value="linux">
-
-- `$HOME/GOG Games`;
-
-</TabItem>
-<TabItem value="macos">
+<TabItem values={["linux", "macos"]}>
 
 - `$HOME/GOG Games`;
 
@@ -130,7 +120,7 @@ Make sure you extract it the right way. There's a lot of wrong ways, apparently.
 Make sure you extract it the right way. There's a lot of wrong ways, apparently.
 
 - Make sure that `BepInEx` and `doorstop_libs` folders are in the same directory as your game's executable (`StreetsOfRogue.x86` or `StreetsOfRogue.x86_64`);
-- Make sure that you extract the `run_bepinex.sh` files too;
+- Make sure that you extract the `run_bepinex.sh` file too;
 
 </TabItem>
 <TabItem value="macos">
@@ -138,7 +128,7 @@ Make sure you extract it the right way. There's a lot of wrong ways, apparently.
 Make sure you extract it the right way. There's a lot of wrong ways, apparently.
 
 - Make sure that `BepInEx` and `doorstop_libs` folders are in the same directory as your game's executable (`StreetsOfRogue.app`);
-- Make sure that you extract the `run_bepinex.sh` files too;
+- Make sure that you extract the `run_bepinex.sh` file too;
 
 </TabItem>
 </Tabs>
