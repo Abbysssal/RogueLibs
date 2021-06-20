@@ -1,0 +1,58 @@
+# Custom Sprites
+
+import useBaseUrl from '@docusaurus/useBaseUrl';
+
+## Adding sprites as resources {#sprites-as-resources}
+
+First of all, get your sprites and convert them to PNG or JPEG, if they're not already PNG- or JPEG-encoded.
+
+Then, change the files' extensions to `.bin`. This way Visual Studio will recognize the files as binary data instead of bitmaps.
+
+:::note
+Screenshot needed
+:::
+
+Right-click on your project, go a-a-all the way down and click **Properties**:
+
+<img src={useBaseUrl('/img/dev-extra/sprites/project-properties.png')} width='300'/>
+
+Go to **Resources** tab and click on *that* button to create a resources file:
+
+<img src={useBaseUrl('/img/dev-extra/sprites/create-resources.png')} width='800'/>
+
+Select **Add resource** at the top of the menu and click **Add existing file...**:
+
+<img src={useBaseUrl('/img/dev-extra/sprites/add-resource.png')} width='600'/>
+
+Now just find your images (with `.bin` extension) and add them as resources:
+
+:::note
+Screenshot needed
+:::
+
+Now you should be able to reference your sprites' data from the code like this: `Properties.Resources.<ResourceName>`.
+
+:::note
+If you get an error, then make sure that the default namespace, that is specified in project's properties in **Application** tab, is the same as the one you're using.
+:::
+
+## Initialization
+
+Normally, new instances of `RogueSprite` are created like this:
+
+```csharp
+RogueLibs.CreateCustomItem<MyCustomItem>()
+    ...
+    // highlight-next-line
+    .WithSprite(Properties.Resources.MyCustomItem);
+```
+
+But you can create them directly too, although you'll have to specify a name and a scope. Scope of the sprite determines what areas of the game the sprite will be available in. `SpriteScope.Items` will work only on items, `SpriteScope.Objects` - only on objects, and etc. You can specify multiple scopes too by combining them with `|` operator.
+
+```csharp
+RogueLibs.CreateCustomSprite("name", SpriteScope.Items, Properties.Resources.ResourceName);
+```
+
+:::caution Work-In-Progress
+This section is being worked on.
+:::

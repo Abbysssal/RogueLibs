@@ -137,6 +137,7 @@ function Tabs(props) {
           )}
         </div>
       )}
+      <br/>
     </div>
   );
 }

@@ -1,0 +1,96 @@
+# Creating a Custom Item
+
+import Tabs from '@site/src/components/Tabs';
+import TabItem from '@site/src/components/TabItem';
+import useBaseUrl from '@docusaurus/useBaseUrl';
+
+## `CustomItem` class {#customitem}
+
+To make a custom item, you need to create a class deriving from `CustomItem`:
+
+```csharp title="MyCustomItem.cs"
+// highlight-next-line
+public class MyCustomItem : CustomItem
+{
+}
+```
+
+There's only one method that you need to implement - `SetupDetails`:
+
+```csharp title="MyCustomItem.cs"
+public class MyCustomItem : CustomItem
+{
+    // highlight-start
+    public override void SetupDetails()
+    {
+        Item.itemType = ItemTypes.Tool;
+        Item.itemValue = 200;
+        Item.initCount = 1;
+        Item.rewardCount = 1;
+        Item.stackable = true;
+        Item.hasCharges = true;
+    }
+    // highlight-end
+}
+```
+
+This method is called only once, when the item is created or spawned.<br/>See more info [later on this page](#setupdetails).
+
+By default, your custom item will have the same name as the class (`Type.Name`).<br/>You can change that behavior with an `ItemName` attribute:
+
+```csharp title="MyCustomItem.cs"
+// highlight-next-line
+[ItemName("My_Custom_Item")]
+public class MyCustomItem : CustomItem
+{
+    ...
+}
+```
+
+## Initialization {#initialization}
+
+Just call the following method in your plugin's `Awake()`:
+
+```csharp title="MyCoolPlugin.cs"
+public void Awake()
+{
+    // highlight-next-line
+    RogueLibs.CreateCustomItem<MyCustomItem>();
+}
+```
+
+You can set your item's name and description using `WithName` and `WithDescription` methods:
+
+```csharp title="MyCoolPlugin.cs"
+public void Awake()
+{
+    RogueLibs.CreateCustomItem<MyCustomItem>()
+    // highlight-start
+        .WithName(new CustomNameInfo("My Custom Item"))
+        .WithDescription(new CustomNameInfo("My Custom Item is very cool and does a lot of great stuff"));
+    // highlight-end
+}
+```
+
+You can do the same with sprites and unlocks:
+
+```csharp title="MyCoolPlugin.cs"
+public void Awake()
+{
+    RogueLibs.CreateCustomItem<MyCustomItem>()
+        .WithName(new CustomNameInfo("My Custom Item"))
+        .WithDescription(new CustomNameInfo("My Custom Item is very cool and does a lot of great stuff"))
+    // highlight-start
+        .WithSprite(Properties.Resources.MyCustomItem)
+        .WithUnlock(new ItemUnlock { UnlockCost = 10, CharacterCreationCost = 5 });
+    // highlight-end
+}
+```
+
+:::info
+See [Using Custom Names](../dev-extra/names), [Custom Sprites](./dev-extra/sprites) for more info.
+:::
+
+## Implementing `SetupDetails` {#setupdetails}
+
+To simplify all of that complicated stuff with the fields, I'll make a `SetupDetails` code generator. Soon. Maybe. I'll try.

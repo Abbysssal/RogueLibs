@@ -1,0 +1,160 @@
+# Custom Names
+
+import Tabs from '@site/src/components/Tabs';
+import TabItem from '@site/src/components/TabItem';
+
+## Constructors and properties {#ctors-and-props}
+
+`CustomNameInfo` structure is used to create custom names and transfer data between different instances of `CustomName`.
+
+```csharp
+CustomNameInfo emptyInfo = new CustomNameInfo();
+CustomNameInfo nameInfo = new CustomNameInfo("english text");
+CustomNameInfo infoFromDict = new CustomNameInfo(
+    new Dictionary<LanguageCode, string>
+    {
+        [LanguageCode.English] = "english text",
+        [LanguageCode.Russian] = "russian text",
+    });
+```
+
+You can add more translations to the custom names too:
+
+<Tabs
+    defaultValue="indexer"
+    values={[
+        {label:'Indexer property', value:'indexer'},
+        {label:'Named properties', value:'named'},
+    ]}>
+<TabItem value="indexer">
+
+```csharp
+nameInfo = new CustomNameInfo
+{
+    [LanguageCode.French] = "texte français",
+    [LanguageCode.Spanish] = "texto en español",
+}
+// or
+nameInfo[LanguageCode.French] = "texte français";
+nameInfo[LanguageCode.Spanish] = "texto en español";
+```
+
+You can also use your own language codes:
+
+```csharp
+nameInfo[(LanguageCode)123] = "日本語テキスト";
+```
+
+:::info
+See more info [later on this page](#custom-languages).
+:::
+
+</TabItem>
+<TabItem value="named">
+
+```csharp
+nameInfo = new CustomNameInfo
+{
+    French = "texte français",
+    Spanish = "texto en español",
+}
+// or
+nameInfo.French = "texte français";
+nameInfo.Spanish = "texto en español";
+```
+
+</TabItem>
+</Tabs>
+
+## Initialization {#initialization}
+
+Usually, `CustomName`s are created automatically, when you add names and descriptions to your items:
+
+```csharp
+RogueLibs.CreateCustomItem<MyCustomItem>()
+    .WithName(new CustomNameInfo("English name"))
+    .WithDescription(new CustomNameInfo("English description"));
+```
+
+You can initialize them yourself too, although you have to provide the name and type of the CustomName yourself:
+
+```csharp
+CustomName name = RogueLibs.CreateCustomName("Name", "Type", new CustomNameInfo("Info"));
+```
+
+If you're going to use the second method, here's the list of types used in the game:
+
+- `Item` - item and special ability names;
+- `Description` - item, special ability, trait, status effect and agent descriptions;
+- `StatusEffect` - trait and status effect names;
+- `Interface` - interface buttons, labels and stuff;
+- `Unlock` - mutator and Big Quest names and descriptions;
+- `Object` - object and chunk type names;
+- `Agent` - agent names;
+- `Dialogue` - agent dialogue lines;
+
+## Custom Languages {#custom-languages}
+
+You can add your custom languages to the game using `CustomName.RegisterLanguageCode` method:
+
+```csharp
+CustomName.RegisterLanguageCode("japanese", (LanguageCode)123);
+```
+
+:::caution Work-In-Progress
+Custom languages are not added into the game's settings menu yet.
+:::
+
+## Custom Name Providers {#name-providers}
+
+If you have some kind of complicated naming strategy, then you might want to use `INameProvider`. This way you can control what strings are returned by `NameDB.GetName`. Just create a class implementing `INameProvider` and add it to `RogueLibsInternals`.
+
+```csharp title="MyProvider.cs"
+public class MyProvider : INameProvider
+{
+    public NameDB NameDB { get; set; }
+    public LanguageCode Language { get; set; }
+    public void GetName(string name, string type, ref string result)
+    {
+        if (name.StartsWith("fake_"))
+        {
+            string sub = name.Substring("fake_".Length);
+            result = NameDB.GetName(sub, type);
+        }
+    }
+}
+```
+
+```csharp
+RogueLibsInternals.NameProviders.Add(new MyProvider());
+```
+
+## Localizations {#localizations}
+
+:::caution Work-In-Progress
+This section is being worked on.
+:::
+
+Here's what a custom localization plugin would look like:
+
+```csharp
+using BepInEx;
+using RogueLibsCore;
+
+namespace MyCoolMod
+{
+    [BepInPlugin(pluginGUID, pluginName, pluginVersion)]
+    [BepInDependency(MyCoolPlugin.pluginGUID)] // that's where these consts come in handy
+    public class RussianLocalization : BaseUnityPlugin
+    {
+        public const string pluginGUID = "myusername.streetsofrogue.mycoolmod.russian";
+        public const string pluginName = "My Cool Mod [RUS]";
+        public const string pluginVersion = "0.1.0";
+
+        public void Awake()
+        {
+            
+        }
+    }
+}
+```
