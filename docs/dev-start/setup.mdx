@@ -1,0 +1,212 @@
+---
+id: setup
+---
+
+# Getting started
+
+import Tabs from '@site/src/components/Tabs';
+import TabItem from '@site/src/components/TabItem';
+import useBaseUrl from '@docusaurus/useBaseUrl';
+
+## Required software {#tools}
+
+First of all, you'll need to install these tools:
+
+- **[dnSpy](https://github.com/dnSpy/dnSpy/releases/latest)** - a .NET assembly editor (and a debugger, but it's way too tedious to make it work for BepInEx and plugins). You're not gonna edit assemblies, just view them to see how the game and/or other plugins works.
+
+- **[Visual Studio 2019 Community](https://visualstudio.microsoft.com/downloads/)** - the Integrated Development Environment (IDE for short) that you'll be working in.
+
+## Creating a project {#creating-project}
+
+Alright, open Visual Studio and **Create a new project**:
+
+<img src={useBaseUrl('/img/setup/creating-project.png')} width='800'/>
+
+Find and select a template called **Class Library (.NET Framework)**, then click **Next**:
+
+<img src={useBaseUrl('/img/setup/selecting-template.png')} width='800'/>
+
+Enter your project's name, without spaces or hyphens, just letters. Select .NET Framework **version 4.5.2**, then click **Create**.
+
+:::tip
+You can create a directory for your repositories in the root of one of your drives, for example, `D:\repos`. It's way shorter, more accessible simpler to use than the default `C:\Users\$USER\source\repos`.
+:::
+
+<img src={useBaseUrl('/img/setup/configuring-project.png')} width='800'/>
+
+## Referencing RogueLibs and game's assembly {#references}
+
+Create a folder called **`Libraries`** in your solution's directory. We'll put all referenced `.dll`s in there.
+
+<img src={useBaseUrl('/img/setup/libraries-folder.png')} width='800'/>
+
+Go to `<GameName>_Data/Managed`, grab the following files and put them in `Libraries`:
+
+- **`Assembly-CSharp.dll`** - assembly with all of the game's code.
+- **`netstandard.dll`** - Idk, for some reason, it's required sometimes.
+- **`UnityEngine.dll`** and **`UnityEngine.CoreModule.dll`** - Unity assemblies.
+
+:::info
+If you don't have a required assembly referenced, you'll see an error in Visual Studio's **Error List**.<br/>In that case, go to `<GameName>_Data/Managed` again and grab the missing assembly.
+:::
+
+Then go to `BepInEx/core` in the game's root and grab these too:
+
+- **`BepInEx.dll`** and **`BepInEx.xml`**.
+- *`0Harmony.dll` and `0Harmony.xml` - in case you want to transpile-patch or do the patching yourself.*
+
+**[Download the latest RogueLibs version](https://github.com/Abbysssal/RogueLibs/releases).**
+
+You'll need only two files: **`RogueLibsCore.dll` and `RogueLibsCore.xml`**. Put them in `Libraries` too:
+
+<img src={useBaseUrl('/img/setup/libraries-folder-2.png')} width='800'/>
+
+Now open Visual Studio, find your project in **Solution Explorer**, right-click on **References** and click **Add Reference...**:
+
+:::note
+Btw, you can remove all of the default references.
+:::
+
+<img src={useBaseUrl('/img/setup/references.png')} width='400'/>
+
+In the **Reference Manager** click **Browse...**, select all `.dll`s in your `Libraries` folder and click **Add**.
+
+<img src={useBaseUrl('/img/setup/references-2.png')} width='800'/>
+
+## Writing a basic plugin {#basic-plugin}
+
+Add all necessary `using`s:
+
+```csharp {1-10} title="Class1.cs"
+using System;
+using System.IO;
+using System.Linq;
+using System.Collections;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
+using System.Text;
+using BepInEx;
+using RogueLibsCore;
+
+namespace MyCoolMod
+{
+    public class Class1
+    {
+        
+    }
+}
+```
+
+Add a class deriving from `BaseUnityPlugin`.
+
+```csharp {4} title="MyCoolPlugin.cs"
+...
+namespace MyCoolMod
+{
+    public class MyCoolPlugin : BaseUnityPlugin
+    {
+    }
+}
+```
+
+Add a `BepInPlugin` attribute to it with your plugin's <abbr title="Globally Unique Identifier">GUID</abbr>, name and version.<br/>You can also put `string`s right into the attribute, without using `const`s, if you want.
+
+```csharp {4,7-9} title="MyCoolPlugin.cs"
+...
+namespace MyCoolMod
+{
+    [BepInPlugin(pluginGUID, pluginName, pluginVersion)]
+    public class MyCoolPlugin : BaseUnityPlugin
+    {
+        public const string pluginGUID = "myusername.streetsofrogue.mycoolmod";
+        public const string pluginName = "My Cool Mod";
+        public const string pluginVersion = "0.1.0";
+    }
+}
+```
+
+:::caution
+Once you've published your mod, **do not change its GUID!** If you do, all dependency trees related to your mod will break. Even if no one uses your mod as a framework, some developers  might have added `BepInIncompatibility` with your mod's GUID. If you want to change the GUID, then create a new mod, replacing the old one.
+:::
+
+:::note
+
+<details>
+
+<summary style={{cursor: 'pointer'}}>I recommend using <a href="https://semver.org">semantic versioning</a>.</summary>
+
+The basic concept is to use 3 version components (major, minor and patch versions) instead of Microsoft's 4.
+- **Major** version is incremented when your mod experiences drastic changes, that make other mods, that targeted the previous major version, incompatible with it. For example: RogueLibs was updated from v1.4.1 to v2.0.0, and [a Ton of Mutators](https://github.com/Abbysssal/aToM) mod, that targeted v1.2.0, became incompatible with the new version (although a Ton of Mutators can be [minor-updated](https://github.com/Abbysssal/aToM/releases/tag/v1.2) to target the new version).
+- **Minor** version is incremented when you add new features or significant improvements. The plugin must still be compatible with mods, that targeted the previous minor version. For example: [ECTD](https://github.com/Abbysssal/ECTD) was updated from v2.8.0 to v2.9.0, introduced new functionality, but mods, that target v2.8.0 version of ECTD, will still work with new v2.9.0.
+- **Patch** version is incremented when you make small improvements or fix bugs. The plugin must still be compatible with mods, that targeted the previous version. For example: [Bunny Mod](https://github.com/Freiling87/BunnyMod) was updated from v1.3.0 to v1.4.0, with a small bug. Later it was updated to v1.4.1, fixing the bug in the previous version.
+- When a version contains pre-release identifiers, or when the major version is 0 (v0.1.2, v0.9.3), the version is considered to be **unstable**, which means that minor and patch updates can break public API. Use them in development or when you're not sure on the API yet.
+- There are also **pre-release** identifiers (v1.2.3-alpha.2). You probably won't even need to use them. Usually, you'd want to use only one string and one numeric identifier:
+  - Use **prealpha** identifier when the mod is in such early stages of development, that it might not even work at all.
+  - Use **alpha** identifier when you're in the process of writing and testing the mod.
+  - Use **beta** or **pre** identifier when the mod *kind of* works, but there's still a lot of work to do.
+  - Use **rc** (**r**elease **c**andidate) identifier, when you think there's a chance it'll become a stable release.
+
+  :::caution
+  BepInEx uses `System.Version` to parse the version, so don't include pre-releases in the `BepInPlugin` attribute!
+  :::
+
+</details>
+
+:::
+
+Add a `BepInDependency` attribute with RogueLibs and add Unity's `Awake()` method:
+
+```csharp {5,12-15} title="MyCoolPlugin.cs"
+...
+namespace MyCoolMod
+{
+    [BepInPlugin(pluginGUID, pluginName, pluginVersion)]
+    [BepInDependency(RogueLibs.GUID, RogueLibs.CompiledVersion)]
+    public class MyCoolPlugin : BaseUnityPlugin
+    {
+        public const string pluginGUID = "myusername.streetsofrogue.mycoolmod";
+        public const string pluginName = "My Cool Mod";
+        public const string pluginVersion = "0.1.0";
+
+        public void Awake()
+        {
+            // your code goes here
+        }
+    }
+}
+```
+
+**Now just explore the docs and make stuff!**
+
+## "Hello World!" plugin example {#hello-world}
+
+```csharp title="MyCoolPlugin.cs"
+using System;
+using System.IO;
+using System.Linq;
+using System.Collections;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
+using System.Text;
+using BepInEx;
+using RogueLibsCore;
+
+namespace MyCoolMod
+{
+    [BepInPlugin(pluginGUID, pluginName, pluginVersion)]
+    [BepInDependency(RogueLibs.GUID, RogueLibs.CompiledVersion)]
+    public class MyCoolPlugin : BaseUnityPlugin
+    {
+        public const string pluginGUID = "myusername.streetsofrogue.mycoolmod";
+        public const string pluginName = "My Cool Mod";
+        public const string pluginVersion = "0.1.0";
+
+        public void Awake()
+        {
+            Logger.LogMessage("Hello World!");
+        }
+    }
+}
+```
