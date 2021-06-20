@@ -11,6 +11,9 @@ module.exports = {
   projectName: 'RogueLibs',
   themeConfig: {
     hideableSidebar: true,
+    prism: {
+      additionalLanguages: ['clike', 'csharp', 'bash'],
+    },
     navbar: {
       hideOnScroll: true,
       title: '',
@@ -26,7 +29,7 @@ module.exports = {
           position: 'left',
         },
         {
-          to: 'docs/intro',
+          to: 'docs/dev-start/setup',
           label: 'Documentation',
           position: 'left',
         },
