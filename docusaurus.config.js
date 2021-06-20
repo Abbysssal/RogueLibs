@@ -12,6 +12,7 @@ module.exports = {
   themeConfig: {
     hideableSidebar: true,
     prism: {
+      theme: require('prism-react-renderer/themes/dracula'),
       additionalLanguages: ['clike', 'csharp', 'bash'],
     },
     navbar: {
