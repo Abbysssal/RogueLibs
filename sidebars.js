@@ -13,6 +13,8 @@ module.exports = {
         {
           'Custom Items': [
             'dev-items/create-item',
+            'dev-items/usable-items',
+            `dev-items/inventory-events`,
           ],
           'Custom Traits': [
 

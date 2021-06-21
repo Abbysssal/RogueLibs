@@ -66,6 +66,14 @@ nameInfo.Spanish = "texto en español";
 </TabItem>
 </Tabs>
 
+Unlike dictionaries, both `CustomName` and `CustomNameInfo` return `null`, if they don't contain the specified `LanguageCode`:
+
+```csharp
+string translation = nameInfo[(LanguageCode)123];
+// returns null, if that language is not specified
+string display = translation ?? nameInfo.English;
+```
+
 ## Initialization {#initialization}
 
 Usually, `CustomName`s are created automatically, when you add names and descriptions to your items:

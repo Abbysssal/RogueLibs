@@ -155,7 +155,7 @@ You can close the game once you see a logo or a loading screen.
 
 Open the included `run_bepinex.sh` script and edit the highlighted line to be the name of the executable:
 
-```bash title="run_bepinex.sh" {14}
+```bash title="run_bepinex.sh"
 #!/bin/sh
 # BepInEx running script
 #
@@ -169,6 +169,7 @@ Open the included `run_bepinex.sh` script and edit the highlighted line to be th
 # EDIT THIS: The name of the executable to run
 # LINUX: This is the name of the Unity game executable 
 # MACOS: This is the name of the game app folder, including the .app suffix
+# highlight-next-line
 executable_name="StreetsOfRogue"
 
 # The rest is automatically handled by BepInEx
@@ -200,7 +201,7 @@ Now you can run BepInEx by executing the script:
 
 Open the included `run_bepinex.sh` script and edit the highlighted line to be the name of the executable **(including the `.app` extension)**:
 
-```bash title="run_bepinex.sh" {14}
+```bash title="run_bepinex.sh"
 #!/bin/sh
 # BepInEx running script
 #
@@ -214,6 +215,7 @@ Open the included `run_bepinex.sh` script and edit the highlighted line to be th
 # EDIT THIS: The name of the executable to run
 # LINUX: This is the name of the Unity game executable 
 # MACOS: This is the name of the game app folder, including the .app suffix
+# highlight-next-line
 executable_name="StreetsOfRogue.app"
 
 # The rest is automatically handled by BepInEx
