@@ -14,6 +14,7 @@ module.exports = {
           'Custom Items': [
             'dev-items/create-item',
             'dev-items/usable-items',
+            'dev-items/combinable-items',
             `dev-items/inventory-events`,
           ],
           'Custom Traits': [
@@ -23,6 +24,7 @@ module.exports = {
 
           ],
         },
+        'dev-extra/other',
       ],
     },
   ],
