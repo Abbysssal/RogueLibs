@@ -77,7 +77,7 @@ InventoryEvents.OnItemUseCheck += e =>
 };
 ```
 
-`RogueEventArgs` class has two properties: `Cancel` and `Handled`. If you set `Handled` to `true`, then all other checks will be ignored. If you set `Cancel` to `true`, then the action that was going to happen will not happen. Usually, they are set to `true` at the same time.
+`RogueEventArgs` class has two properties: `Cancel` and `Handled`. If you set `Handled` to `true`, then all other checks will be skipped. If you set `Cancel` to `true`, then the action that was going to happen will not happen. Usually, they are set to `true` at the same time.
 
 The inventory checks can be ignored with an `IgnoreChecks` attribute:
 

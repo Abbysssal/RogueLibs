@@ -36,7 +36,7 @@ public class MyCustomItem : CustomItem
 
 This method is called only once, when the item is created or spawned.<br/>See more info [later on this page](#setupdetails).
 
-You should add categories using `ItemCategories` attribute instead of adding them in `SetupDetails`. `RogueCategories` contains consts for all default ItemCategories:
+You should add categories using `ItemCategories` attribute instead of adding them in `SetupDetails`. `RogueCategories` contains consts for all default item categories:
 
 ```csharp title="MyCustomItem.cs"
 [ItemCategories(RogueCategories.Usable, RogueCategories.Weird, "MyCustomCategory")]
@@ -102,7 +102,7 @@ public void Awake()
 ```
 
 :::info
-See [Using Custom Names](../dev-extra/names), [Custom Sprites](../dev-extra/sprites) for more info.
+See [Custom Names](../dev-extra/names), [Custom Sprites](../dev-extra/sprites) for more info.
 :::
 
 ## Implementing `SetupDetails` {#setupdetails}

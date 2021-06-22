@@ -9,6 +9,10 @@ module.exports = {
   favicon: 'img/favicon.ico',
   organizationName: 'Abbysssal',
   projectName: 'RogueLibs',
+  i18n: {
+    defaultLocale: 'en',
+    locales: ['en', 'ru'],
+  },
   themeConfig: {
     hideableSidebar: true,
     prism: {
@@ -38,6 +42,10 @@ module.exports = {
           to: 'docs/intro',
           label: 'API',
           position: 'left',
+        },
+        {
+          type: 'localeDropdown',
+          position: 'right',
         },
 	    ],
     },
