@@ -1,0 +1,150 @@
+# События и проверки в инвентаре
+
+## События в инвентаре {#inventory-events}
+
+Класс `InventoryEvents` используется для вызова и подписки на события, связанные с инвентарём, таких как использование предмета, объединение предметов и использование предмета на объекте и др. Вы можете получить `InventoryEvents`, связанный с ивентарём, с помощью метода-расширения `GetEvents()`:
+
+```csharp
+InventoryEvents events = Inventory.GetEvents();
+```
+
+Вы можете подписаться на эти события:
+
+```csharp
+events.OnItemUsed += Events_OnItemUsed;
+...
+public void Events_OnItemUsed(OnItemUsedArgs e)
+{
+    ...
+}
+```
+
+Тут также есть глобальный `InventoryEvents`, который обрабатывает **все** события:
+
+```csharp
+InventoryEvents.Global.OnItemsCombined += Global_OnItemsCombined;
+...
+public void Global_OnItemsCombined(OnItemsCombinedArgs e)
+{
+    ...
+}
+```
+
+## Проверки в инвентаре {#inventory-checks}
+
+Итак, вместо того чтобы добавлять свои проверки таким образом:
+
+```csharp
+if (Owner.statusEffects.hasTrait("BloodRestoresHealth"))
+{
+    Owner.SayDialogue("WontEatThis");
+    return;
+}
+if (Owner.statusEffects.hasTrait("OilRestoresHealth"))
+{
+    Owner.SayDialogue("WontEatThat");
+    return;
+}
+if (Owner.health == Owner.maxHealth)
+{
+    Owner.SayDialogue("NoImFull");
+    return;
+}
+...
+```
+
+RogueLibs позволяет делать универсальные проверки - **проверки в инвентаре**, которые будут работать на всех предметах, соответствующие определённым требованиям (например, имеют тип "Food" и категорию "Alcohol"). Эти проверки в инвентаре также реализуют некоторые простые вещи, которые моддеры забывают реализовать. Например, удаление предмета из инвентаря или остановка взаимодействия, когда количество предмета становится равным 0.
+
+### Добавляем проверки в инвентаре {#adding-checks}
+
+:::danger
+<span style={{filter:'invert(100%)'}}><b>Открытый API проверок в инвентаре может измениться.</b></span>
+:::
+
+Например, есть особенность `"Vegetarian"`, которая не будет давать игрокам употреблять еду с категорией `"Meat"`:
+
+```csharp
+InventoryEvents.OnItemUseCheck += e =>
+{
+    if (!e.Item.IgnoresUseItemCheck("Vegetarian") && e.User.HasTrait("Vegetarian")
+        && e.Item.itemType == ItemTypes.Food && e.Item.Categories.Contains("Meat"))
+    {
+        // делаем что-нибудь, чтобы показать игроку почему действие не удалось
+        e.User.gc.audioHandler.Play(e.User, "CantDo");
+        // ставим Cancel и Handled на true
+        e.Cancel = e.Handled = true;
+    }
+};
+```
+
+У класса `RogueEventArgs` есть два свойства: `Cancel` и `Handled`. Если выставить `Handled` на `true`, то все другие проверки будут пропущены. Есть выставить `Cancel` на `true`, то действие, которое должно было произойти, не произойдёт. Обычно, они выставляются на `true` одновременно.
+
+Проверки в инвентаре могут быть проигнорированы атрибутом `IgnoreChecks`:
+
+```csharp
+[ItemCategories(RogueCategories.Food, RogueCategories.Weird, "Meat")]
+public class MysteryFood : CustomItem, IItemUsable
+{
+    // highlight-next-line
+    [IgnoreChecks("Vegetarian")]
+    public void UseItem()
+    {
+        e.User.ChangeHealth(Item.healthChange);
+        Count--;
+        e.User.SayDialogue("Ммм, вкусно. Интересно, что же там было...");
+        UseItemAnim();
+    }
+}
+```
+
+### Проверки в инвентаре по умолчанию {#default-checks}
+
+#### `UseItem` {#useitem-checks}
+
+Название | Условия | Фраза
+:------- |:------- |:-----
+`Ghost` | Игрок - призрак. | -
+`CantInteract` | Особенность "Безмозглый", **НЕ** тип Food. | "???" или "Р-р-р-р-р!!!!!"
+`OnlyOil` | Особенность "Бензинозависимость", тип Food и (категория Food или Alcohol). | "Мне нужен бензин..."
+`OnlyOilMedicine` | Особенность "Бензинозависимость", тип Consumable и категория Health. | "Мне нужен бензин..."
+`OnlyBlood` | Особенность "Кровопийца", тип Food и (категория Food или Alcohol). | "Фу, гадость, я не буду это есть!"
+`OnlyBloodMedicine` | Особенность "Кровопийца", тип Consumable и категория Health. | "Современная медицина для людей, мне нужна КРОВЬ!"
+`OnlyCharge` | Особенность "Электронный", тип Food и категория Food. | "У меня нет желудка."
+`OnlyHumanFlesh` | Особенность "Ярый каннибализм", тип Food и категория Food. | "Фу, гадость, я не буду это есть!"
+`HealthFull` | Здоровье игрока полное и `healthChange` предмета больше 0. | "Не надо, у меня и так все в порядке!"
+
+#### `CombineFilter` {#combinefilter-checks}
+
+Название | Условия | Что произойдёт
+:------- |:------- |:--------------
+`StackItems` | У предметов одно и то же название | Они будут объединены в один
+
+#### `CombineItems` {#combineitems-checks}
+
+Название | Условия | Что произойдёт
+:------- |:------- |:--------------
+`StopOnZero` | Количество текущего предмета равно 0, или предмет не находится в инвентаре | Взаимодействие/объединение будет остановлено
+
+#### `CombineTooltip` {#combinetooltip-checks}
+
+Название | Условия | Что произойдёт
+:------- |:------- |:--------------
+`CombineFilter` | Метод `CombineFilter` вернул `false` для предмета | Подсказка будет пустой
+
+#### `TargetFilter` {#targetfilter-checks}
+
+Название | Условия | Что произойдёт
+:------- |:------- |:--------------
+`Distance` | Целевой объект на расстоянии больше 15 единиц | `false`
+`ButlerBot` | Цель - Робот-дворецкий | `false`
+`EmptyMech` | Цель - пустой Мех | `false`
+
+#### `TargetObject` {#targetobject-checks}
+
+Название | Условия | Что произойдёт
+:------- |:------- |:--------------
+`StopOnZero` | Количество текущего предмета равно 0, или предмет не находится в инвентаре | Взаимодействие/объединение будет остановлено
+
+#### `TargetTooltip` {#targettooltip-checks}
+
+Нету.

@@ -1,24 +1,41 @@
 import React from 'react';
 import clsx from 'clsx';
 import styles from './HomepageFeatures.module.css';
+import Translate, {translate} from '@docusaurus/Translate';
 
 const FeatureList = [
   {
-    title: 'Easy to Use',
+    title: (
+      <Translate id="features.easy.title">
+        Easy to Use
+      </Translate>
+    ),
     Svg: require('../../static/img/undraw_docusaurus_mountain.svg').default,
     description: (
-      <>
+      <Translate id="features.easy.description">
         RogueLibs does all of the patching for you!
-      </>
+      </Translate>
     ),
   },
   {
-    title: 'Focus on What Matters',
+    title: (
+      <Translate id="features.focus.title">
+        Focus on What Matters
+      </Translate>
+    ),
     Svg: require('../../static/img/undraw_docusaurus_tree.svg').default,
     description: (
-      <>
-        Let RogueLibs handle the hard work, and <b>you just focus on the content!</b>
-      </>
+      <span>
+        <Translate id="features.focus.description">
+          Let RogueLibs handle the hard work, and
+        </Translate>
+
+        <b>
+          <Translate id="features.focus.description.bold">
+            you just focus on the content!
+          </Translate>
+        </b>
+      </span>
     ),
   },
 ];

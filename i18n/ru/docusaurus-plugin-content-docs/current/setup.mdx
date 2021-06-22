@@ -1,0 +1,187 @@
+# Начало работы
+
+import Tabs from '@site/src/components/Tabs';
+import TabItem from '@site/src/components/TabItem';
+import useBaseUrl from '@docusaurus/useBaseUrl';
+
+## Требуемые программы {#tools}
+
+Вам надо установить следующие программы:
+
+- **[dnSpy](https://github.com/dnSpy/dnSpy/releases/latest)** - редактор .NET сборок (и отладчик, но его слишком сложно включить для BepInEx и плагинов). Вам не надо будет редактировать сборки, а только просматривать их, чтобы узнать как игра и другие плагины работают.
+
+- **[Visual Studio 2019 Community](https://visualstudio.microsoft.com/downloads/)** - Интегрированная среда разработки (сокращение - ИСР), в которой вы будете работать.
+
+## Создаём проект {#creating-project}
+
+Итак, откройте Visual Studio и **Создайте новый проект**:
+
+<img src={useBaseUrl('/img/setup/creating-project.png')} width='800'/>
+
+Найдите и выберите шаблон **Class Library (.NET Framework)**, и нажмите **Далее**:
+
+<img src={useBaseUrl('/img/setup/selecting-template.png')} width='800'/>
+
+Введите название своего проекта, без пробелов и тире, только буквы. Выберите версию .NET Framework **4.5.2**, и кликните **Создать**.
+
+:::tip
+Вы можете создать папку для ваших репозиториев в корне одного из дисков, например, `D:\repos`. Это гораздо короче, более доступно и просто проще, чем стоящий по умолчанию `C:\Users\$USER\source\repos`.
+:::
+
+<img src={useBaseUrl('/img/setup/configuring-project.png')} width='800'/>
+
+## Добавление ссылок на RogueLibs и сборку игры {#references}
+
+Создайте папку под названием **`Libraries`** в папке вашего решения. Мы будет ставить туда все `.dll`, на которые мы будем ссылаться.
+
+<img src={useBaseUrl('/img/setup/libraries-folder.png')} width='800'/>
+
+Перейдите к `<GameName>_Data/Managed`, возьмите следующие файлы и закиньте их в `Libraries`:
+
+- **`Assembly-CSharp.dll`** - сборка со всем кодом из игры.
+- **`netstandard.dll`** - хз, но зачем-то эта сборка иногда нужна.
+- **`UnityEngine.dll`** и **`UnityEngine.CoreModule.dll`** - сборки Unity.
+
+:::info
+Если у вас нет ссылки на нужную сборку, вы увидите ошибку в **Списке ошибок** Visual Studio.<br/>В этом случае, перейдите к `<GameName>_Data/Managed` опять и возьмите недостающую сборку.
+:::
+
+Теперь перейдите к `BepInEx/core` в корне игры и возьмите следующие файлы:
+
+- **`BepInEx.dll`** и **`BepInEx.xml`**.
+- *`0Harmony.dll` и `0Harmony.xml` - если вы будете писать транспиляторы или патчить напрямую через Harmony.*
+
+**[Скачайте последнюю версию RogueLibs](https://github.com/Abbysssal/RogueLibs/releases).**
+
+Вам понадобится только два файла: **`RogueLibsCore.dll` и `RogueLibsCore.xml`**. Положите их в `Libraries` тоже:
+
+<img src={useBaseUrl('/img/setup/libraries-folder-2.png')} width='800'/>
+
+Теперь откройте Visual Studio и найдите свой проект в **Обозревателе решений**, кликните ПКМ по **Зависимости** и нажмите **Добавить ссылку...**:
+
+:::note
+Кстати, можете убрать все зависимости по умолчанию.
+:::
+
+<img src={useBaseUrl('/img/setup/references.png')} width='400'/>
+
+В **Менеджере зависимостей** нажмите **Обзор...**, выберите все `.dll` в `Libraries` и нажмите **Добавить**.
+
+<img src={useBaseUrl('/img/setup/references-2.png')} width='800'/>
+
+## Пишем простой плагин {#basic-plugin}
+
+Добавьте все нужные `using`и:
+
+```csharp title="Class1.cs"
+// highlight-start
+using System;
+using System.IO;
+using System.Linq;
+using System.Collections;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
+using System.Text;
+using BepInEx;
+using RogueLibsCore;
+// highlight-end
+
+namespace MyCoolMod
+{
+    public class Class1
+    {
+        
+    }
+}
+```
+
+Добавьте класс происходящий от `BaseUnityPlugin`.
+
+```csharp title="MyCoolPlugin.cs"
+namespace MyCoolMod
+{
+    // highlight-next-line
+    public class MyCoolPlugin : BaseUnityPlugin
+    {
+    }
+}
+```
+
+Добавьте к нему атрибут `BepInPlugin` с <abbr title="Globally Unique Identifier">GUID</abbr>, названием и версией своего плагина.<br/>Вы также можете поставить все `string`и прямо в атрибут, без `const`, если хотите.
+
+```csharp title="MyCoolPlugin.cs"
+// highlight-next-line
+[BepInPlugin(pluginGUID, pluginName, pluginVersion)]
+public class MyCoolPlugin : BaseUnityPlugin
+{
+    // highlight-start
+    public const string pluginGUID = "myusername.streetsofrogue.mycoolmod";
+    public const string pluginName = "My Cool Mod";
+    public const string pluginVersion = "0.1.0";
+    // highlight-end
+}
+```
+
+:::caution
+Как только вы опубликуете свой мод, **не изменяйте его GUID!** Если измените, все зависимости связанные с вашим модом сломаются. Даже если никто не использует ваш мод как основу, некоторые разработчики могли добавить атрибут `BepInIncompatibility` с GUID вашего плагина. Если хотите изменить GUID, то создайте новый мод на замену старому.
+:::
+
+:::tip
+Я рекомендую использовать [семантическое версионирование](https://semver.org/lang/ru/) для модов.
+:::
+
+Добавьте атрибут `BepInDependency` с RogueLibs и добавьте `Awake()` метод из Unity:
+
+```csharp title="MyCoolPlugin.cs"
+[BepInPlugin(pluginGUID, pluginName, pluginVersion)]
+// highlight-next-line
+[BepInDependency(RogueLibs.GUID, RogueLibs.CompiledVersion)]
+public class MyCoolPlugin : BaseUnityPlugin
+{
+    public const string pluginGUID = "myusername.streetsofrogue.mycoolmod";
+    public const string pluginName = "My Cool Mod";
+    public const string pluginVersion = "0.1.0";
+
+    // highlight-start
+    public void Awake()
+    {
+        // ваш код тут
+    }
+    // highlight-end
+}
+```
+
+**Теперь просто изучайте документацию и делайте всякие вещи!**
+
+## Пример плагина "Hello World!" {#hello-world}
+
+```csharp title="MyCoolPlugin.cs"
+using System;
+using System.IO;
+using System.Linq;
+using System.Collections;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
+using System.Text;
+using BepInEx;
+using RogueLibsCore;
+
+namespace MyCoolMod
+{
+    [BepInPlugin(pluginGUID, pluginName, pluginVersion)]
+    [BepInDependency(RogueLibs.GUID, RogueLibs.CompiledVersion)]
+    public class MyCoolPlugin : BaseUnityPlugin
+    {
+        public const string pluginGUID = "myusername.streetsofrogue.mycoolmod";
+        public const string pluginName = "My Cool Mod";
+        public const string pluginVersion = "0.1.0";
+
+        public void Awake()
+        {
+            Logger.LogMessage("Hello World!");
+        }
+    }
+}
+```

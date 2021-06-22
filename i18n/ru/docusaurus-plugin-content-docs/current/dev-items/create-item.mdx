@@ -1,0 +1,114 @@
+# Создаём кастомный предмет
+
+import Tabs from '@site/src/components/Tabs';
+import TabItem from '@site/src/components/TabItem';
+import useBaseUrl from '@docusaurus/useBaseUrl';
+
+## Класс `CustomItem` {#customitem}
+
+Чтобы сделать кастомный предмет, вам надо сделать класс происходящий от `CustomItem`:
+
+```csharp title="MyCustomItem.cs"
+// highlight-next-line
+public class MyCustomItem : CustomItem
+{
+}
+```
+
+Вам надо реализовать только один метод - `SetupDetails`:
+
+```csharp title="MyCustomItem.cs"
+public class MyCustomItem : CustomItem
+{
+    // highlight-start
+    public override void SetupDetails()
+    {
+        Item.itemType = ItemTypes.Tool;
+        Item.itemValue = 200;
+        Item.initCount = 1;
+        Item.rewardCount = 1;
+        Item.stackable = true;
+        Item.hasCharges = true;
+    }
+    // highlight-end
+}
+```
+
+Этот метод вызывается только один раз, когда предмет создаётся или спавнится.<br/>Смотрите подробнее [далее на этой странице](#setupdetails).
+
+Добавляйте категории через атрибут `ItemCategories` вместо того, чтоб добавлять их в `SetupDetails`. В `RogueCategories` есть константы для всех категорий предметов из игры:
+
+```csharp title="MyCustomItem.cs"
+[ItemCategories(RogueCategories.Usable, RogueCategories.Weird, "MyCustomCategory")]
+public class MyCustomItem : CustomItem
+{
+    ...
+}
+```
+
+:::tip
+Используйте статичные типы с константами, наподобие `RogueCategories` и `ItemTypes`. Таким образом вы не допустите опечаток. Опечатки иногда могут быть критичными, ведь ни игра, ни RogueLibs не следят за всеми существующими категориями предметов *(однако это довольно интересная идея, возможно я сделаю что-то типа этого)*. Вы можете даже не осознать что допустили опечатку.
+:::
+
+По умолчанию, у ваших кастомных предметов название будет таким же, как и у их классов (`Type.Name`).<br/>Вы можете изменить это добавив атрибут `ItemName`:
+
+```csharp title="MyCustomItem.cs"
+// highlight-next-line
+[ItemName("My_Custom_Item")]
+public class MyCustomItem : CustomItem
+{
+    ...
+}
+```
+
+## Инициализация {#initialization}
+
+Просто вызовите следующий метод в методе `Awake()` вашего плагина:
+
+```csharp title="MyCoolPlugin.cs"
+public void Awake()
+{
+    // highlight-next-line
+    RogueLibs.CreateCustomItem<MyCustomItem>();
+}
+```
+
+Вы можете выставить название и описание вашего предмета с помощью методов `WithName` и `WithDescription`:
+
+```csharp title="MyCoolPlugin.cs"
+public void Awake()
+{
+    RogueLibs.CreateCustomItem<MyCustomItem>()
+    // highlight-start
+        .WithName(new CustomNameInfo("My Custom Item")
+        { Russian = "Мой кастомный предмет" })
+        .WithDescription(new CustomNameInfo("My Custom Item is very cool and does a lot of great stuff")
+        { Russian = "Мой кастомный предмет очень крутой и делает много чего крутого" });
+    // highlight-end
+}
+```
+
+То же самое можно сделать и со спрайтами и разблокировками:
+
+```csharp title="MyCoolPlugin.cs"
+public void Awake()
+{
+    RogueLibs.CreateCustomItem<MyCustomItem>()
+        .WithName(new CustomNameInfo("My Custom Item")
+        { Russian = "Мой кастомный предмет" })
+        .WithDescription(new CustomNameInfo("My Custom Item is very cool and does a lot of great stuff")
+        { Russian = "Мой кастомный предмет очень крутой и делает много чего крутого" });
+    // highlight-start
+        .WithSprite(Properties.Resources.MyCustomItem)
+        .WithUnlock(new ItemUnlock { UnlockCost = 10, CharacterCreationCost = 5 });
+    // highlight-end
+}
+```
+
+:::info
+Смотрите [Кастомные имена](../dev-extra/names), [Кастомные спрайты](../dev-extra/sprites) для подробной информации.
+:::
+
+## Реализуем `SetupDetails` {#setupdetails}
+
+Чтобы упростить всю эту сложную ерунду с полями, я сделаю генератор кода для `SetupDetails`. Скоро. Наверное. Попытаюсь.

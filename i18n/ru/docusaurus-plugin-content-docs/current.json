@@ -1,0 +1,26 @@
+{
+  "version.label": {
+    "message": "v3.0.0-beta.6",
+    "description": "The label for version current"
+  },
+  "sidebar.documentationSidebar.category.User's Guide": {
+    "message": "Руководство пользователя",
+    "description": "The label for category User's Guide in sidebar documentationSidebar"
+  },
+  "sidebar.documentationSidebar.category.Developer's Guide": {
+    "message": "Руководство разработчика",
+    "description": "The label for category Developer's Guide in sidebar documentationSidebar"
+  },
+  "sidebar.documentationSidebar.category.Custom Items": {
+    "message": "Кастомные предметы",
+    "description": "The label for category Custom Items in sidebar documentationSidebar"
+  },
+  "sidebar.documentationSidebar.category.Custom Traits": {
+    "message": "Кастомные особенности",
+    "description": "The label for category Custom Traits in sidebar documentationSidebar"
+  },
+  "sidebar.documentationSidebar.category.Custom Unlocks": {
+    "message": "Кастомные разблокировки",
+    "description": "The label for category Custom Unlocks in sidebar documentationSidebar"
+  }
+}

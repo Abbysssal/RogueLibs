@@ -8,6 +8,7 @@ import HomepageFeatures from '../components/HomepageFeatures';
 import useThemeContext from '@theme/hooks/useThemeContext';
 import Logo from '@site/static/img/logo.png';
 import LogoDark from '@site/static/img/logo-inverted.png';
+import Translate, {translate} from '@docusaurus/Translate';
 
 function HomepageHeader() {
   const {siteConfig} = useDocusaurusContext();
@@ -16,12 +17,19 @@ function HomepageHeader() {
     <header className={clsx('hero hero--primary', styles.heroBanner)}>
       <div className="container">
         <img src={isDarkTheme ? LogoDark : Logo} width='50%'/>
-        <p className="hero__subtitle">{siteConfig.tagline}</p>
+        <p className="hero__subtitle">
+          <Translate id="homepage.tagline">
+            Doing the impossible.
+          </Translate>
+        </p>
         <div className={styles.buttons}>
           <Link
             className="button button--secondary button--lg"
             to="/docs/intro">
-            RogueLibs Documentation
+            <Translate id="homepage.button"
+              description="The big button in the center on the home page">
+              RogueLibs Documentation
+            </Translate>
           </Link>
         </div>
       </div>
