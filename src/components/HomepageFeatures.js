@@ -29,7 +29,7 @@ const FeatureList = [
         <Translate id="features.focus.description">
           Let RogueLibs handle the hard work, and
         </Translate>
-
+        {' '}
         <b>
           <Translate id="features.focus.description.bold">
             you just focus on the content!
