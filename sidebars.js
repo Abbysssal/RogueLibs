@@ -7,9 +7,17 @@ module.exports = {
         'user/troubleshooting',
       ],
       'Developer\'s Guide': [
-        'setup',
-        'dev-extra/names',
-        'dev-extra/sprites',
+        {
+          type: 'category',
+          label: 'Introduction',
+          collapsed: false,
+          items: [
+            'dev-intro/setup',
+            'dev-intro/names',
+            'dev-intro/sprites',
+            'dev-intro/patching',
+          ],
+        },
         {
           'Custom Items': [
             'dev-items/create-item',
@@ -24,7 +32,6 @@ module.exports = {
 
           ],
         },
-        'dev-extra/other',
       ],
     },
   ],

@@ -21,13 +21,6 @@ public class MyCustomItem : CustomItem, IItemCombinable
 }
 ```
 
-:::note
-When combined, most items also play an animation with `UseItemAnim`:
-:::
-:::note
-GIF needed
-:::
-
 ## Examples
 
 <Tabs
@@ -55,13 +48,14 @@ public class Grindstone : CustomItem, IItemCombinable
     }
     public bool CombineFilter(InvItem other)
         => other.itemType == ItemTypes.WeaponMelee && !other.contents.Exists(c => c.StartsWith("Sharpened:"));
-    public void CombineItems(InvItem other)
+    public bool CombineItems(InvItem other)
     {
         other.contents.Add("Sharpened:3");
         Count--;
-		UseItemAnim();
+        return true;
     }
     public CustomTooltip CombineTooltip(InvItem other) => null;
+    public CustomTooltip CombineCursorText(InvItem other) => null;
 }
 ```
 
@@ -99,7 +93,7 @@ public class AmmoBox : CustomItem, IItemCombinable
 		Item.stackable = true;
     }
     public bool CombineFilter(InvItem other) => other.itemType == ItemTypes.WeaponProjectile && !other.noRefills;
-    public void CombineItems(InvItem other)
+    public bool CombineItems(InvItem other)
     {
         int amountToRefill = other.maxAmmo - other.invItemCount;
 		float singleCost = (float)other.itemValue / other.maxAmmo;
@@ -109,6 +103,7 @@ public class AmmoBox : CustomItem, IItemCombinable
 		{
 			Owner.SayDialogue("AmmoDispenserFull");
 			gc.audioHandler.Play(Owner, "CantDo");
+            return false;
 		}
 
 		int affordableAmount = (int)Mathf.Ceil(Count / singleCost);
@@ -119,7 +114,7 @@ public class AmmoBox : CustomItem, IItemCombinable
 		other.invItemCount += willBeBought;
 		Owner.SayDialogue("AmmoDispenserFilled");
 		gc.audioHandler.Play(Owner, "BuyItem");
-		UseItemAnim();
+        return true;
     }
     public CustomTooltip CombineTooltip(InvItem other)
     {
@@ -138,6 +133,7 @@ public class AmmoBox : CustomItem, IItemCombinable
 
 		return "+" + Mathf.Min(amountToRefill, canAfford) + " (" + Mathf.Min(cost, Count) + ")";
     }
+    public CustomTooltip CombineCursorText(InvItem other) => null;
 }
 ```
 

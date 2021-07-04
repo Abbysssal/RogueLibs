@@ -21,13 +21,6 @@ public class MyCustomItem : CustomItem, IItemUsable
 }
 ```
 
-:::note
-When used, most items also play an animation with `UseItemAnim`:
-:::
-:::note
-GIF needed
-:::
-
 ## Examples
 
 <Tabs
@@ -55,7 +48,7 @@ public class JokeBook : CustomItem, IItemUsable
         Item.hasCharges = true;
         Item.goesInToolbar = true;
     }
-    public void UseItem()
+    public bool UseItem()
     {
         // Just temporarily change the character's special ability
         string prev = Owner.specialAbility;
@@ -65,7 +58,7 @@ public class JokeBook : CustomItem, IItemUsable
 
         // subtract from item count and play animation
         Count--;
-        UseItemAnim();
+        return true;
     }
 }
 ```
@@ -102,9 +95,9 @@ public class QuantumFud : CustomItem, IItemUsable, IDoUpdate
         Item.cantBeCloned = true;
         Item.goesInToolbar = true;
     }
-    public void UseItem()
+    public bool UseItem()
     {
-        if (Cooldown != 0f) return;
+        if (Cooldown != 0f) return false;
         
         // determine the health change
         int heal = new ItemFunctions().DetermineHealthChange(Item, Owner);
@@ -117,9 +110,9 @@ public class QuantumFud : CustomItem, IItemUsable, IDoUpdate
 
         // play sound and animation
         gc.audioHandler.Play(Owner, "UseFood");
-        UseItemAnim();
         // set cooldown, so that players can't just click 20-30 times per second and be almost invincible
         Cooldown = 0.5f;
+        return true;
     }
     public float Cooldown { get; set; }
     // subtract Time.deltaTime from Cooldown, but Cooldown won't go below 0.
@@ -160,7 +153,7 @@ public class WildBypasser : CustomItem, IItemUsable
 		Item.stackable = true;
 		Item.goesInToolbar = true;
     }
-    public void UseItem()
+    public bool UseItem()
     {
         Vector3 position = Owner.agentHelperTr.localPosition = Vector3.zero;
 		TileData tileData;
@@ -174,7 +167,7 @@ public class WildBypasser : CustomItem, IItemUsable
 		} while ((gc.tileInfo.IsOverlapping(Owner.agentHelperTr.position, "Anything")
             || tileData.wallMaterial != wallMaterialType.None) && limit++ < 250);
 
-		if (limit > 250) return;
+		if (limit > 250) return false;
 
 		Owner.SpawnParticleEffect("Spawn", Owner.tr.position);
 		Owner.Teleport(Owner.agentHelperTr.position, false, true);
@@ -189,7 +182,7 @@ public class WildBypasser : CustomItem, IItemUsable
         // spawn particles, play sound and animation
 		Owner.SpawnParticleEffect("Spawn", Owner.tr.position, false);
 		gc.audioHandler.Play(Owner, "Spawn");
-		UseItemAnim();
+        return true;
     }
 }
 ```

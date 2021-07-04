@@ -1,0 +1,335 @@
+# Patching Utilities
+
+import Tabs from '@site/src/components/Tabs';
+import TabItem from '@site/src/components/TabItem';
+
+## `RoguePatcher`
+
+`RoguePatcher` is a small helper class that makes writing patches faster and easier. You don't have a lot of control over how patches work, so, if you need that, use original Harmony methods.
+
+### Patching with Harmony {#patching-with-harmony}
+
+```csharp
+Harmony harmony = new Harmony(pluginGUID);
+MethodInfo original = AccessTools.Method(typeof(StatusEffects), nameof(StatusEffects.hasStatusEffect));
+MethodInfo patch = AccessTools.Method(GetType(), "MyPatchMethod");
+harmony.Patch(original, patch);
+```
+
+### Patching with RoguePatcher {#patching-with-roguepatcher}
+
+```csharp
+RoguePatcher patcher = new RoguePatcher(this);
+patcher.Postfix(typeof(StatusEffects), nameof(StatusEffects.hasStatusEffect));
+```
+
+The patcher will look for a method called `<TargetType>_<TargetMethod>` in your plugin's class, for example:
+
+```csharp
+[BepInPlugin(...)]
+public class MyCoolPlugin : BaseUnityPlugin
+{
+    ...
+    public void Awake()
+    {
+        RoguePatcher patcher = new RoguePatcher(this);
+        patcher.Postfix(typeof(StatusEffects), nameof(StatusEffects.hasStatusEffect));
+    }
+    // highlight-next-line
+    public static void StatusEffects_hasStatusEffect(StatusEffects __instance)
+    {
+        ...
+    }
+}
+```
+
+You can put your patches in a different class if you want. Just specify a different type in the constructor:
+
+```csharp
+[BepInPlugin(...)]
+public class MyCoolPlugin : BaseUnityPlugin
+{
+    ...
+    public void Awake()
+    {
+        // highlight-next-line
+        RoguePatcher patcher = new RoguePatcher(this, typeof(MyCoolPatches));
+        patcher.Postfix(typeof(StatusEffects), nameof(StatusEffects.hasStatusEffect));
+    }
+}
+public class MyCoolPatches
+{
+    public static void StatusEffects_hasStatusEffect(StatusEffects __instance)
+    {
+        ...
+    }
+}
+```
+
+## Transpiler helper methods {#transpiler-helpers}
+
+Harmony transpilers are really complicated. If you want to insert some code in some very specific place, then you'll have to do a lot of indexes, math, flags and stuff. Luckily, these helper methods will save you a lot of time.
+
+### `AddRegionAfter` and `AddRegionBefore` {#transpiler-add-region}
+
+Here's an example from RogueLibs:
+
+<Tabs defaultValue="helper"
+    values={[
+        {label:'With helper methods', value:'helper'},
+        {label:'Without', value:'harmony'},
+    ]}>
+<TabItem value="helper">
+
+```csharp
+public static IEnumerable<CodeInstruction> StatusEffects_AddStatusEffect(IEnumerable<CodeInstruction> codeEnumerable)
+    => codeEnumerable.AddRegionAfter(
+        new Func<CodeInstruction, bool>[]
+        {
+            i => i.IsLdloc(),
+            i => i.opcode == OpCodes.Ldarg_3,
+            i => i.opcode == OpCodes.Stfld && i.StoresField(causingAgentField),
+        },
+        new Func<CodeInstruction[], CodeInstruction>[]
+        {
+            a => a[0],
+            _ => new CodeInstruction(OpCodes.Ldarg_0),
+            _ => new CodeInstruction(OpCodes.Call, typeof(RogueLibsPlugin).GetMethod(nameof(SetupEffectHook))),
+        });
+
+private static readonly FieldInfo causingAgentField = typeof(StatusEffect).GetField(nameof(StatusEffect.causingAgent));
+```
+
+</TabItem>
+<TabItem value="harmony">
+
+Yeah, it looks easy. But that's only because it's a very simple example.
+
+```csharp
+public static IEnumerable<CodeInstruction> StatusEffects_AddStatusEffect(IEnumerable<CodeInstruction> code)
+{
+    bool searching = true;
+	int current = 0;
+	CodeInstruction[] matches = new CodeInstruction[after.Length];
+	foreach (CodeInstruction instr in code)
+	{
+		yield return instr;
+		if (searching)
+		{
+            if (current is 0 ? instr.IsLdloc()
+                : current is 1 ? instr.opcode == OpCodes.Ldarg_3
+                : instr.opcode == OpCodes.Stfld && instr.StoresField(causingAgentField))
+			{
+				matches[current] = instr;
+				if (++current is 3)
+				{
+                    searching = false;
+                    yield return matches[0];
+                    yield return new CodeInstruction(OpCodes.Ldarg_0);
+                    yield return new CodeInstruction(OpCodes.Call, typeof(RogueLibsPlugin).GetMethod(nameof(SetupEffectHook)));
+				}
+			}
+			else current = 0;
+		}
+	}
+}
+
+private static readonly FieldInfo causingAgentField = typeof(StatusEffect).GetField(nameof(StatusEffect.causingAgent));
+```
+
+</TabItem>
+</Tabs>
+
+:::tip Avoid heavy calculations
+When writing predicates, keep in mind that they might get called hundreds of times. For example, you can pre-calculate the `FieldInfo` value, used by your predicate, just put it in a static readonly field, like in the example above.
+
+Heavy calculations like that can cost you **seconds** of start-up time.
+:::
+
+The first array's predicates match to the code, that you want to insert the new instructions after.
+
+The second array is an array of `Func<CodeInstruction[], CodeInstruction>`. Each of these functions will be called after finding a place to insert them after. The functions take an array of matched instructions as a parameter. This way you can adapt your code to whatever value `ldloc` uses.
+
+For example, there's this IL code:
+
+```csharp
+    ...
+    IL_0F83: stfld     bool StatusEffect::removeOnKnockout
+    // highlight-start
+  * IL_0F88: ldloc.s   V_9
+  * IL_0F8A: ldarg.3
+  * IL_0F8B: stfld     class Agent StatusEffect::causingAgent
+    // highlight-end
+    IL_0F90: ldarg.0
+    ...
+```
+
+The highlighted instructions are the ones, that the predicates in the first array returned `true` for. The code will be inserted after these instructions. After transpiling the code will look like this:
+
+```csharp
+    ...
+    IL_0F83: stfld     bool StatusEffect::removeOnKnockout
+  * IL_0F88: ldloc.s   V_9
+  * IL_0F8A: ldarg.3
+  * IL_0F8B: stfld     class Agent StatusEffect::causingAgent
+    // highlight-start
+ +  IL_XXXX: ldloc.s   V_9
+ +  IL_XXXX: ldarg.0
+ +  IL_XXXX: call      void RogueLibsCore.RogueLibsPlugin::SetupEffectHook(StatusEffect)
+    // highlight-end
+    IL_XXXX: ldarg.0
+    ...
+```
+
+`AddRegionBefore` works the same way, except that it inserts the instructions before, instead of after, the matched instructions.
+
+### `ReplaceRegion` {#transpiler-replace-region}
+
+`ReplaceRegion` just removes the matched instructions and inserts the new ones in their place.
+
+Here's another example from RogueLibs:
+
+<Tabs defaultValue="helper"
+    values={[
+        {label:'With helper methods', value:'helper'},
+        {label:'Without', value:'harmony'},
+    ]}>
+
+<TabItem value="helper">
+
+```csharp
+public static IEnumerable<CodeInstruction> Unlocks_LoadInitialUnlocks(IEnumerable<CodeInstruction> codeEnumerable)
+	=> codeEnumerable.ReplaceRegion(
+		new Func<CodeInstruction, bool>[]
+		{
+			i => i.opcode == OpCodes.Callvirt && i.Calls(List_Unlock_GetEnumerator),
+            i => i.IsStloc(),
+		},
+		new Func<CodeInstruction, bool>[]
+		{
+            i => i.opcode == OpCodes.Callvirt,
+			i => i.opcode == OpCodes.Endfinally,
+            i => i.opcode == OpCodes.Ldarg_0,
+		},
+		new CodeInstruction[]
+		{
+			new CodeInstruction(OpCodes.Pop),
+			new CodeInstruction(OpCodes.Pop),
+			new CodeInstruction(OpCodes.Call, typeof(RogueLibsPlugin).GetMethod(nameof(LoadUnlockWrappersAndCategorize)))
+		}
+	);
+```
+
+</TabItem>
+<TabItem value="harmony">
+
+You wouldn't want to do this every time you want to make a transpiler.
+
+```csharp
+public static IEnumerable<CodeInstruction> Unlocks_LoadInitialUnlocks(IEnumerable<CodeInstruction> code)
+{
+    int state = 0;
+	int current = 0;
+	CodeInstruction[] beginCache = new CodeInstruction[2];
+	foreach (CodeInstruction instr in code)
+	{
+		if (state is 2)
+			yield return instr;
+		else if (state is 0)
+		{
+			if (current is 0 ? instr.opcode == OpCodes.Callvirt && instr.Calls(List_Unlock_GetEnumerator)
+                : instr.IsStloc())
+			{
+				beginCache[current] = instr;
+				if (++current == 2)
+				{
+					state = 1;
+					current = 0;
+				}
+			}
+			else
+			{
+				if (current > 0)
+				{
+					for (int i = 0; i < current; i++)
+						yield return beginCache[i];
+					current = 0;
+				}
+				yield return instr;
+			}
+		}
+		else
+		{
+			if (current is 0 ? instr.opcode == OpCodes.Callvirt
+                : current is 1 ? instr.opcode == OpCodes.Endfinally
+                : instr.opcode == OpCodes.Ldarg_0)
+			{
+				if (++current == 3)
+				{
+			        yield return new CodeInstruction(OpCodes.Pop);
+			        yield return new CodeInstruction(OpCodes.Pop);
+			        yield return new CodeInstruction(OpCodes.Call, typeof(RogueLibsPlugin).GetMethod(nameof(LoadUnlockWrappersAndCategorize)));
+				}
+			}
+			else current = 0;
+		}
+	}
+}
+```
+
+</TabItem>
+</Tabs>
+
+By the way, if you're going to remove instructions, then you'll have to take care of their labels. For example, if you remove `IL_0CC7`, `bgt.s IL_0CC7` won't be able to transfer control to the removed `IL_0CC7` label:
+
+```csharp
+    ...
+    IL_XXXX: bgt.s   IL_0CC7
+    ...
+    // highlight-start
+  - IL_0CC7: ldc.i4  9999
+  - IL_0CCC: stloc.0
+  - IL_0CCD: ldarg.0
+    // highlight-end
+    ...
+```
+
+```csharp
+    ...
+    IL_XXXX: bgt.s   IL_0CC7
+    ...
+    // highlight-start
+ +  IL_YYYY: ldarg.0
+ +  IL_XXXX: ldarg.1
+ +  IL_XXXX: call    void RogueLibsCore.RogueLibsPlugin::GetStatusEffectTime(StatusEffect, int)
+ +  IL_XXXX: stloc.0
+ +  IL_XXXX: ldarg.0
+    // highlight-end
+    ...
+```
+
+You'll have to copy labels from the removed instructions to the new ones:
+
+```csharp
+public static IEnumerable<CodeInstruction> StatusEffects_GetStatusEffectTime(IEnumerable<CodeInstruction> codeEnumerable)
+	=> codeEnumerable.ReplaceRegion(
+		new Func<CodeInstruction, bool>[]
+		{
+			i => i.opcode == OpCodes.Ldc_I4 && (int)i.operand is 9999,
+			i => i.IsStloc(),
+			i => i.opcode == OpCodes.Ldarg_0,
+		},
+		new Func<CodeInstruction[], CodeInstruction>[]
+		{
+            // highlight-next-line
+			a => new CodeInstruction(OpCodes.Ldarg_0).WithLabels(a[0]),
+			_ => new CodeInstruction(OpCodes.Ldarg_1),
+			_ => new CodeInstruction(OpCodes.Call, typeof(RogueLibsPlugin).GetMethod(nameof(GetStatusEffectTime))),
+			a => a[1],
+			a => a[2],
+		});
+```
+
+### `RemoveRegion` {#transpiler-remove-region}
+
+`RemoveRegion` just removes the matched instructions. The label thing applies in here too.
