@@ -16,6 +16,7 @@ module.exports = {
             'dev-intro/names',
             'dev-intro/sprites',
             'dev-intro/patching',
+            'dev-intro/other',
           ],
         },
         {
@@ -26,7 +27,7 @@ module.exports = {
             `dev-items/inventory-events`,
           ],
           'Custom Traits': [
-
+            'dev-traits/create-trait',
           ],
           'Custom Unlocks': [
 
