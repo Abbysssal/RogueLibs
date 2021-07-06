@@ -34,7 +34,7 @@ module.exports = {
           position: 'left',
         },
         {
-          to: 'docs/dev-intro/setup',
+          to: 'docs/getting-started',
           label: 'Documentation',
           position: 'left',
         },
