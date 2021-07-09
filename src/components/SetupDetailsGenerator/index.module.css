@@ -1,0 +1,84 @@
+.numInput {
+  background-color: white;
+}
+.numInput:invalid {
+  background-color: tomato;
+}
+.numInput:placeholder-shown {
+  background-color: silver;
+}
+
+.wrapper {
+  display: grid;
+  grid-template-columns: repeat(3, [col] minmax(150px, auto));
+  grid-template-rows: repeat(3, [row] minmax(30px, auto));
+  gap: 5px;
+  border: 1px dotted #FFFFFF;
+  padding: 15px;
+}
+
+.general {
+  grid-column: 1;
+  grid-row: 1 / span 3;
+}
+.counts {
+  grid-column: 2;
+  grid-row: 3;
+  display: grid;
+  grid-template-columns: auto auto;
+  grid-template-rows: auto auto;
+  gap: 5px;
+}
+.counts > input {
+  justify-self: baseline;
+}
+.counts > span {
+  justify-self: start;
+}
+
+.uploadSprite {
+  grid-column: 2;
+  grid-row: 1;
+}
+.uploadSprite input {
+  font-size: 20px;
+}
+.downloadSprite {
+  grid-column: 3;
+  grid-row: 1;
+}
+
+.inventoryPreview {
+  grid-column: 2;
+  grid-row: 2;
+  display: grid;
+  grid-template-columns: 160px 80px;
+  grid-template-rows: 80px 80px;
+  gap: 5px;
+}
+.inventoryPreview-view {
+  grid-column: 2;
+  grid-row: 2;
+}
+.inventoryPreview-zoom {
+  grid-column: 1;
+  grid-row: 1 / span 2;
+  align-self: center;
+  justify-self: center;
+}
+.inventoryPreview-zoom div {
+  transform: scale(2);
+}
+.inventoryPreview-zoom img {
+  image-rendering: pixelated;
+}
+.inventoryPreview-settings {
+  grid-column: 2;
+  grid-row: 1;
+  display: grid;
+  grid-template-columns: 32px 32px;
+  grid-template-rows: 32px 32px;
+  gap: 5px;
+  align-self: center;
+  justify-self: center;
+}

@@ -13,6 +13,7 @@ module.exports = {
     defaultLocale: 'en',
     locales: ['en', 'ru'],
   },
+  plugins: ['docusaurus-plugin-fontloader'],
   themeConfig: {
     hideableSidebar: true,
     prism: {

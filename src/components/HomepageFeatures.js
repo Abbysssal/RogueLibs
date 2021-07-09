@@ -2,6 +2,8 @@ import React from 'react';
 import clsx from 'clsx';
 import styles from './HomepageFeatures.module.css';
 import Translate, {translate} from '@docusaurus/Translate';
+import svg1 from '@site/static/img/undraw_docusaurus_mountain.svg';
+import svg2 from '@site/static/img/undraw_docusaurus_tree.svg';
 
 const FeatureList = [
   {
@@ -10,7 +12,7 @@ const FeatureList = [
         Easy to Use
       </Translate>
     ),
-    Svg: require('../../static/img/undraw_docusaurus_mountain.svg').default,
+    svg: svg1,
     description: (
       <Translate id="features.easy.description">
         RogueLibs does all of the patching for you!
@@ -23,7 +25,7 @@ const FeatureList = [
         Focus on What Matters
       </Translate>
     ),
-    Svg: require('../../static/img/undraw_docusaurus_tree.svg').default,
+    svg: svg2,
     description: (
       <span>
         <Translate id="features.focus.description">
@@ -40,11 +42,11 @@ const FeatureList = [
   },
 ];
 
-function Feature({Svg, title, description}) {
+function Feature({svg, title, description}) {
   return (
     <div className={clsx('col col--4')}>
       <div className="text--center">
-        <Svg className={styles.featureSvg} alt={title} />
+        <img src={svg} className={styles.featureSvg} alt={title}/>
       </div>
       <div className="text--center padding-horiz--md">
         <h3>{title}</h3>
@@ -60,7 +62,7 @@ export default function HomepageFeatures() {
       <div className="container">
         <div className="row">
           {FeatureList.map((props, idx) => (
-            <Feature key={idx} {...props} />
+            <Feature key={idx} {...props}/>
           ))}
         </div>
       </div>
