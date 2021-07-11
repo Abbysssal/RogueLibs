@@ -22,8 +22,9 @@
 .tooltip {
     position: absolute;
     left: 4px;
-    top: -7px;
+    top: 6px;
     font-family: 'Munro';
+    line-height: 75%;
     color: #FFED00;
     font-size: 30px;
     text-shadow: 3px 3px black;
@@ -32,8 +33,9 @@
 .count {
     position: absolute;
     right: 3px;
-    bottom: -4px;
+    bottom: 9px;
     font-family: 'Munro';
+    line-height: 75%;
     color: white;
     font-size: 30px;
     text-shadow: 3px 3px black;

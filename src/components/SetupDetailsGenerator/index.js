@@ -6,6 +6,9 @@ import styles from './index.module.css';
 import SettingButton from './SettingButton';
 import InventorySlot from './InventorySlot';
 import Toolbar from './Toolbar';
+import Dropdown from '../Dropdown';
+import DropdownHeader from '../DropdownHeader';
+import DropdownOption from '../DropdownOption';
 
 export default function ({...props}) {
   const [itemSprite, setItemSprite] = useState(useBaseUrl(`/img/SetupDetailsGenerator/TestItem.png`));
@@ -22,20 +25,15 @@ export default function ({...props}) {
   };
 
   const [itemType, setItemType] = useState("Food");
+  const [displayItemType, setDisplayItemType] = useState("Food");
 
   const [initCount, setInitCount] = useState(1);
-  const [initCountAI, setInitCountAI] = useState(null);
   const [rewardCount, setRewardCount] = useState(null);
   const initCountHandler = e => {
     if (e.target.valueAsNumber > 99999) e.target.valueAsNumber = 99999;
     if (isNaN(e.target.valueAsNumber)) setInitCount(1);
     else setInitCount(e.target.valueAsNumber);
   };
-  const initCountAIHandler = e => {
-    if (e.target.valueAsNumber > 99999) e.target.valueAsNumber = 99999;
-    if (isNaN(e.target.valueAsNumber)) setInitCountAI(null);
-    else setInitCountAI(e.target.valueAsNumber);
-  }
   const rewardCountHandler = e => {
     if (e.target.valueAsNumber > 99999) e.target.valueAsNumber = 99999;
     if (isNaN(e.target.valueAsNumber)) setRewardCount(null);
@@ -45,9 +43,9 @@ export default function ({...props}) {
   const codeGen = () => {
     let ops = [];
     ops.push(`itemType = ItemTypes.${itemType};`);
-    ops.push(`initCount = ${initCount};`);
-    if (initCountAI !== null) ops.push(`initCountAI = ${initCountAI};`);
-    if (rewardCount !== null) ops.push(`rewardCount = ${rewardCount};`);
+    if (initCount != 1) ops.push(`initCount = ${initCount};`);
+    if (rewardCount !== null && rewardCount != initCount)
+      ops.push(`rewardCount = ${rewardCount};`);
     return ops.map(line => `    Item.${line}\n`).join('');
   };
 
@@ -55,9 +53,19 @@ export default function ({...props}) {
     <div>
       <div className={styles.wrapper}>
         <div className={styles.general}>
-          <input type="button" value="itemType"/>
-          <br/>
-          <input type="button" value="Categories"/>
+          <Dropdown onChange={(t, l) => { setItemType(t); setDisplayItemType(l); }}>
+            <DropdownHeader>
+              {"Item type: " + displayItemType}
+            </DropdownHeader>
+            <DropdownOption value="Food"/>
+            <DropdownOption value="Combine" label="Combinable"/>
+            <DropdownOption value="Tool"/>
+            <DropdownOption value="WeaponMelee" label="Melee Weapon"/>
+            <DropdownOption value="Consumable"/>
+            <DropdownOption value="WeaponThrown" label="Thrown Weapon"/>
+            <DropdownOption value="Wearable"/>
+            <DropdownOption value="WeaponProjectile" label="Projectile Weapon"/>
+          </Dropdown>
         </div>
         <div className={styles.uploadSprite}>
           <input type="file" accept="image/*"
@@ -83,8 +91,6 @@ export default function ({...props}) {
         <div className={styles.counts}>
           <span>Initial count: </span>
           <input className={styles.numInput} type="number" min='0' max='99999' placeholder={initCount} onChange={initCountHandler}/>
-          <span>Initial count (AI): </span>
-          <input className={styles.numInput} type="number" min='0' max='99999' placeholder={initCount} onChange={initCountAIHandler}/>
           <span>Reward count: </span>
           <input className={styles.numInput} type="number" min='0' max='99999' placeholder={initCount} onChange={rewardCountHandler}/>
         </div>
@@ -92,8 +98,8 @@ export default function ({...props}) {
       <div>
         <Toolbar items={[
           {sprite: itemSprite, tooltip: '1', count: initCount},
-          {sprite: itemSprite, tooltip: '2', count: initCountAI !== null ? initCountAI : initCount},
-          {sprite: itemSprite, tooltip: '3', count: rewardCount !== null ? rewardCount : initCount},
+          {sprite: itemSprite, tooltip: '2', count: rewardCount !== null ? rewardCount : initCount},
+          {sprite: itemSprite, tooltip: '3'},
           {sprite: itemSprite, tooltip: '4'},
           {sprite: itemSprite, tooltip: '5'},
         ]}/>
