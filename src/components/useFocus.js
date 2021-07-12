@@ -12,9 +12,6 @@ export default function (initialIsVisible) {
   };
 
   const handleClickOutside = event => {
-    console.log("click");
-    console.log(ref);
-    console.log(event);
     if (ref.current && !ref.current.contains(event.target)) {
       setIsComponentVisible(false);
     }

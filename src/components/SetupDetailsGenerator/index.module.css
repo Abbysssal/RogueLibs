@@ -10,13 +10,13 @@
 
 .wrapper {
   display: grid;
-  grid-template-columns: repeat(3, [col] minmax(150px, auto));
+  grid-template-columns: auto min-content min-content;
   grid-template-rows: repeat(3, [row] minmax(30px, auto));
   gap: 15px;
   border: 5px dashed var(--ifm-menu-color-background-hover);
   padding: 15px;
   font-family: 'Munro';
-  line-height: 75%;
+  line-height: 100%;
   font-size: 20px;
 }
 
