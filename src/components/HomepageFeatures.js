@@ -2,8 +2,8 @@ import React from 'react';
 import clsx from 'clsx';
 import styles from './HomepageFeatures.module.css';
 import Translate, {translate} from '@docusaurus/Translate';
-import svg1 from '@site/static/img/undraw_docusaurus_mountain.svg';
-import svg2 from '@site/static/img/undraw_docusaurus_tree.svg';
+import svg1 from '@site/static/img/undraw_docusaurus_mountain.png';
+import svg2 from '@site/static/img/undraw_docusaurus_tree.png';
 
 const FeatureList = [
   {
