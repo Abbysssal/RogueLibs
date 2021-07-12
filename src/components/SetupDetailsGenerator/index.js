@@ -53,7 +53,7 @@ export default function ({...props}) {
     <div>
       <div className={styles.wrapper}>
         <div className={styles.general}>
-          <Dropdown onChange={(t, l) => { setItemType(t); setDisplayItemType(l); }}>
+          <Dropdown onChange={(v, l) => { setItemType(v); setDisplayItemType(l); }}>
             <DropdownHeader>
               {"Item type: " + displayItemType}
             </DropdownHeader>
