@@ -13,10 +13,10 @@ Just implement the `IItemCombinable` interface in your item's class:
 public class MyCustomItem : CustomItem, IItemCombinable
 {
     // highlight-start
-    public bool CombineFilter(InvItem other) { ... }
-    public bool CombineItems(InvItem other) { ... }
-    public CustomTooltip CombineTooltip(InvItem other) { ... }
-    public CustomTooltip CombineCursorText(InvItem other) { ... }
+    public bool CombineFilter(InvItem other) { /*...*/ }
+    public bool CombineItems(InvItem other) { /*...*/ }
+    public CustomTooltip CombineTooltip(InvItem other) { /*...*/ }
+    public CustomTooltip CombineCursorText(InvItem other) { /*...*/ }
     // highlight-end
 }
 ```
@@ -33,20 +33,20 @@ public class MyCustomItem : CustomItem, IItemCombinable
 `CombineFilter` does not control what items can be passed as parameters to other methods. You need to check if the passed item is compatible inside other methods too:
 
 ```csharp
-    public bool CombineFilter(InvItem other) { ... }
     public bool CombineItems(InvItem other)
     {
         // highlight-next-line
         if (!CombineFilter(other)) return false;
-        ...
+        // ...
     }
     public CustomTooltip CombineTooltip(InvItem other)
     {
         // highlight-next-line
         if (!CombineFilter(other)) return null;
-        ...
+        // ...
     }
-    public CustomTooltip CombineCursorText(InvItem other) => null;
+    public CustomTooltip CombineCursorText(InvItem other)
+        => gc.nameDB.GetName(CombineFilter(other) ? "DoSomething" : "CantDoSomething", "Interface");
 ```
 :::
 
@@ -69,11 +69,11 @@ public class Grindstone : CustomItem, IItemCombinable
     public override void SetupDetails()
     {
         Item.itemType = ItemTypes.Combine;
-		Item.itemValue = 40;
-		Item.initCount = 10;
-		Item.rewardCount = 10;
-		Item.hasCharges = true;
-		Item.stackable = true;
+        Item.itemValue = 40;
+        Item.initCount = 10;
+        Item.rewardCount = 10;
+        Item.hasCharges = true;
+        Item.stackable = true;
     }
     public bool CombineFilter(InvItem other)
         => other.itemType == ItemTypes.WeaponMelee && !other.contents.Exists(c => c.StartsWith("Sharpened:"));
@@ -117,11 +117,11 @@ public class AmmoBox : CustomItem, IItemCombinable
     public override void SetupDetails()
     {
         Item.itemType = ItemTypes.Combine;
-		Item.itemValue = 4;
-		Item.initCount = 100;
-		Item.rewardCount = 200;
-		Item.hasCharges = true;
-		Item.stackable = true;
+        Item.itemValue = 4;
+        Item.initCount = 100;
+        Item.rewardCount = 200;
+        Item.hasCharges = true;
+        Item.stackable = true;
     }
     public bool CombineFilter(InvItem other) => other.itemType == ItemTypes.WeaponProjectile && !other.noRefills;
     public bool CombineItems(InvItem other)
@@ -129,40 +129,40 @@ public class AmmoBox : CustomItem, IItemCombinable
         if (!CombineFilter(other)) return false;
 
         int amountToRefill = other.maxAmmo - other.invItemCount;
-		float singleCost = (float)other.itemValue / other.maxAmmo;
-		if (Owner.oma.superSpecialAbility && (Owner.agentName == "Soldier" || Owner.agentName == "Doctor"))
-			singleCost = 0f;
-		if (other.invItemCount >= other.maxAmmo)
-		{
-			Owner.SayDialogue("AmmoDispenserFull");
-			gc.audioHandler.Play(Owner, "CantDo");
+        float singleCost = (float)other.itemValue / other.maxAmmo;
+        if (Owner.oma.superSpecialAbility && (Owner.agentName == "Soldier" || Owner.agentName == "Doctor"))
+            singleCost = 0f;
+        if (other.invItemCount >= other.maxAmmo)
+        {
+            Owner.SayDialogue("AmmoDispenserFull");
+            gc.audioHandler.Play(Owner, "CantDo");
             return false;
-		}
+        }
 
-		int affordableAmount = (int)Mathf.Ceil(Count / singleCost);
-		int willBeBought = Mathf.Min(affordableAmount, amountToRefill);
-		int willBeReduced = (int)Mathf.Min(Count, willBeBought * singleCost);
+        int affordableAmount = (int)Mathf.Ceil(Count / singleCost);
+        int willBeBought = Mathf.Min(affordableAmount, amountToRefill);
+        int willBeReduced = (int)Mathf.Min(Count, willBeBought * singleCost);
 
         Count -= willBeReduced;
-		other.invItemCount += willBeBought;
-		Owner.SayDialogue("AmmoDispenserFilled");
-		gc.audioHandler.Play(Owner, "BuyItem");
+        other.invItemCount += willBeBought;
+        Owner.SayDialogue("AmmoDispenserFilled");
+        gc.audioHandler.Play(Owner, "BuyItem");
         return true;
     }
     public CustomTooltip CombineTooltip(InvItem other)
     {
         if (!CombineFilter(other)) return null;
 
-		int amountToRefill = other.maxAmmo - other.invItemCount;
-		if (amountToRefill == 0) return null;
+        int amountToRefill = other.maxAmmo - other.invItemCount;
+        if (amountToRefill == 0) return null;
 
-		float singleCost = (float)other.itemValue / other.maxAmmo;
-		if (Owner.oma.superSpecialAbility && (Owner.agentName == "Soldier" || Owner.agentName == "Doctor"))
-			singleCost = 0f;
-		int cost = (int)Mathf.Floor(amountToRefill * singleCost);
-		int canAfford = (int)Mathf.Ceil(Count / singleCost);
+        float singleCost = (float)other.itemValue / other.maxAmmo;
+        if (Owner.oma.superSpecialAbility && (Owner.agentName == "Soldier" || Owner.agentName == "Doctor"))
+            singleCost = 0f;
+        int cost = (int)Mathf.Floor(amountToRefill * singleCost);
+        int canAfford = (int)Mathf.Ceil(Count / singleCost);
 
-		return "+" + Mathf.Min(amountToRefill, canAfford) + " (" + Mathf.Min(cost, Count) + ")";
+        return "+" + Mathf.Min(amountToRefill, canAfford) + " (" + Mathf.Min(cost, Count) + ")";
     }
     public CustomTooltip CombineCursorText(InvItem other) => null;
 }
